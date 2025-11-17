@@ -2,7 +2,7 @@ import React from "react";
 import {
   StyleSheet,
   Text,
-  ScrollView,
+  Pressable,
   Alert,
   TouchableOpacity,
 } from "react-native";
@@ -13,12 +13,15 @@ type Props = {
   name: string;
   isCompleted?: boolean;
   onDelete: () => void;
+  onToggleComplete: () => void;
 };
 export default function ShoppingListItem({
   name,
   isCompleted,
   onDelete,
+  onToggleComplete,
 }: Props) {
+ 
   const HandleDelete = () => {
     Alert.alert("Delete Item", "Are you sure you want to delete this item?", [
       {
@@ -37,8 +40,10 @@ export default function ShoppingListItem({
   
 
   return (
-    <ScrollView
-      contentContainerStyle={[
+    <Pressable
+    onPress={onToggleComplete}
+      style={[
+        
         styles.itemContainer,
         isCompleted ? styles.completedContainer : null,
       ]}
@@ -58,7 +63,7 @@ export default function ShoppingListItem({
       >
         <CloseCircleIcon size={24} color={isCompleted ? "#888" : "red"} />
       </TouchableOpacity>
-    </ScrollView>
+    </Pressable>
   );
 }
 
