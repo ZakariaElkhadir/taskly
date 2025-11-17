@@ -8,12 +8,13 @@ type ShoppingListItemType = {
   id: string;
   name: string;
   completedAtTimestamp?: number;
+  lastUpdatedTimestamp: number;
 };
 
 const initialList: ShoppingListItemType[] = [
-  { id: "1", name: "Juice" },
-  { id: "2", name: "Coffee" },
-  { id: "3", name: "Tea" },
+  { id: "1", name: "Juice", lastUpdatedTimestamp: Date.now() },
+  { id: "2", name: "Coffee", lastUpdatedTimestamp: Date.now() },
+  { id: "3", name: "Tea", lastUpdatedTimestamp: Date.now() },
 ];
 
 export default function App() {
@@ -22,7 +23,11 @@ export default function App() {
   const handleSubmit = () => {
     if (value) {
       const newShoppingList = [
-        { id: Date.now().toString(), name: value },
+        {
+          id: Date.now().toString(),
+          name: value,
+          lastUpdatedTimestamp: Date.now(),
+        },
         ...shoppingList,
       ];
       setShoppingList(newShoppingList);
@@ -33,9 +38,17 @@ export default function App() {
     const newShoppingList = shoppingList.map((item) => {
       if (item.id === id) {
         if (item.completedAtTimestamp) {
-          return { ...item, completedAtTimestamp: undefined };
+          return {
+            ...item,
+            completedAtTimestamp: undefined,
+            lastUpdatedTimestamp: Date.now(),
+          };
         } else {
-          return { ...item, completedAtTimestamp: Date.now() };
+          return {
+            ...item,
+            completedAtTimestamp: Date.now(),
+            lastUpdatedTimestamp: Date.now(),
+          };
         }
       }
       return item;
@@ -48,7 +61,7 @@ export default function App() {
   }
   return (
     <FlatList
-      data={shoppingList}
+      data={orderShoppingList(shoppingList)}
       ListEmptyComponent={
         <View style={styles.listEmptyText}>
           <Text>Your shopping list is empty. Add items to get started!</Text>
@@ -70,6 +83,28 @@ export default function App() {
       }}
     />
   );
+}
+
+function orderShoppingList(shoppingList: ShoppingListItemType[]) {
+  return shoppingList.sort((item1, item2) => {
+    if (item1.completedAtTimestamp && item2.completedAtTimestamp) {
+      return item2.completedAtTimestamp - item1.completedAtTimestamp;
+    }
+
+    if (item1.completedAtTimestamp && !item2.completedAtTimestamp) {
+      return 1;
+    }
+
+    if (!item1.completedAtTimestamp && item2.completedAtTimestamp) {
+      return -1;
+    }
+
+    if (!item1.completedAtTimestamp && !item2.completedAtTimestamp) {
+      return item2.lastUpdatedTimestamp - item1.lastUpdatedTimestamp;
+    }
+
+    return 0;
+  });
 }
 
 const styles = StyleSheet.create({
