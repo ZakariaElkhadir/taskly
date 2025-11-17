@@ -1,8 +1,10 @@
-import { StyleSheet, TextInput, FlatList, Text, View } from "react-native";
+import { StyleSheet, TextInput, FlatList, Text, View, LayoutAnimation } from "react-native";
 import ShoppingListItem from "../components/ShoppingListItem";
-import { Link } from "expo-router";
 import { theme } from "../theme";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getFromStorage, saveToStorage } from "../utils/storage";
+import * as Haptics from "expo-haptics";
+
 
 type ShoppingListItemType = {
   id: string;
@@ -16,10 +18,23 @@ const initialList: ShoppingListItemType[] = [
   { id: "2", name: "Coffee", lastUpdatedTimestamp: Date.now() },
   { id: "3", name: "Tea", lastUpdatedTimestamp: Date.now() },
 ];
+const storageKey = "shoppingList";
 
 export default function App() {
   const [shoppingList, setShoppingList] = useState<ShoppingListItemType[]>([]);
   const [value, setValue] = useState("");
+  useEffect(() => {
+    const fetchInitial = async () => {
+      const data = await getFromStorage(storageKey);
+      if (data) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setShoppingList(data);
+      } else {
+        setShoppingList(initialList);
+      }
+    }
+    fetchInitial();
+  }, []);
   const handleSubmit = () => {
     if (value) {
       const newShoppingList = [
@@ -30,20 +45,23 @@ export default function App() {
         },
         ...shoppingList,
       ];
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setShoppingList(newShoppingList);
       setValue("");
     }
   };
-  const handleToggleComplete = (id:string) =>{
+  const handleToggleComplete = (id: string) => {
     const newShoppingList = shoppingList.map((item) => {
       if (item.id === id) {
         if (item.completedAtTimestamp) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           return {
             ...item,
             completedAtTimestamp: undefined,
             lastUpdatedTimestamp: Date.now(),
           };
         } else {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           return {
             ...item,
             completedAtTimestamp: Date.now(),
@@ -53,12 +71,16 @@ export default function App() {
       }
       return item;
     });
+    saveToStorage(storageKey, newShoppingList);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setShoppingList(newShoppingList);
-  }
-  const HandleDelete = (id:string) =>{
+  };
+  const HandleDelete = (id: string) => {
     const newShoppingList = shoppingList.filter((item) => item.id !== id);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setShoppingList(newShoppingList);
-  }
+  };
   return (
     <FlatList
       data={orderShoppingList(shoppingList)}
@@ -79,7 +101,14 @@ export default function App() {
       }
       stickyHeaderIndices={[0]}
       renderItem={({ item }) => {
-        return <ShoppingListItem isCompleted={Boolean(item.completedAtTimestamp)} name={item.name} onDelete={() => HandleDelete(item.id)} onToggleComplete={() => handleToggleComplete(item.id)} />;
+        return (
+          <ShoppingListItem
+            isCompleted={Boolean(item.completedAtTimestamp)}
+            name={item.name}
+            onDelete={() => HandleDelete(item.id)}
+            onToggleComplete={() => handleToggleComplete(item.id)}
+          />
+        );
       }}
     />
   );

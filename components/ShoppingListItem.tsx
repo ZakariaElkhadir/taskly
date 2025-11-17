@@ -1,4 +1,5 @@
 import React from "react";
+import * as Haptics from "expo-haptics";
 import {
   StyleSheet,
   Text,
@@ -24,6 +25,7 @@ export default function ShoppingListItem({
   onToggleComplete,
 }: Props) {
   const HandleDelete = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert("Delete Item", "Are you sure you want to delete this item?", [
       {
         text: "Cancel",
