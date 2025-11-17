@@ -5,9 +5,11 @@ import {
   Pressable,
   Alert,
   TouchableOpacity,
+  View,
 } from "react-native";
 import { theme } from "../theme";
 import CloseCircleIcon from "./CloseCircleIcon";
+import { Entypo } from "@expo/vector-icons";
 
 type Props = {
   name: string;
@@ -21,7 +23,6 @@ export default function ShoppingListItem({
   onDelete,
   onToggleComplete,
 }: Props) {
- 
   const HandleDelete = () => {
     Alert.alert("Delete Item", "Are you sure you want to delete this item?", [
       {
@@ -37,68 +38,94 @@ export default function ShoppingListItem({
       },
     ]);
   };
-  
 
   return (
     <Pressable
-    onPress={onToggleComplete}
+      onPress={onToggleComplete}
       style={[
-        
         styles.itemContainer,
         isCompleted ? styles.completedContainer : null,
       ]}
     >
-      <Text
-        style={[styles.itemText, isCompleted ? styles.completedText : null]}
-      >
-        {name}
-      </Text>
+      <View style={styles.itemContent}>
+        <View
+          style={[
+            styles.checkboxContainer,
+            isCompleted ? styles.checkboxCompleted : null,
+          ]}
+        >
+          {isCompleted && (
+            <Entypo
+              name="check"
+              size={20}
+              color={theme.colorWhite}
+            />
+          )}
+        </View>
+        <Text
+          style={[styles.itemText, isCompleted ? styles.completedText : null]}
+        >
+          {name}
+        </Text>
+      </View>
       <TouchableOpacity
         onPress={HandleDelete}
         activeOpacity={0.8}
-        style={
-          isCompleted ? [styles.button, styles.completedButton] : styles.button
-        }
-        disabled={isCompleted}
+        style={styles.deleteButton}
       >
-        <CloseCircleIcon size={24} color={isCompleted ? "#888" : "red"} />
+        <CloseCircleIcon size={24} color={isCompleted ? "#aaa" : "red"} />
       </TouchableOpacity>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  completedButton: {
-    backgroundColor: "#c0c0c0ff",
-  },
-  completedText: {
-    textDecorationLine: "line-through",
-    color: theme.colorWhite,
-  },
-  completedContainer: {
-    backgroundColor: theme.colorGray,
-    borderBottomColor: theme.colorGray,
-  },
   itemContainer: {
     borderBottomWidth: 1,
-    borderBottomColor: "#8000ffff",
-    paddingHorizontal: 8,
-    paddingVertical: 10,
+    borderBottomColor: theme.colorLightGrey,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    backgroundColor: theme.colorWhite,
   },
-  button: {
-    padding: 10,
-    borderRadius: 5,
+  completedContainer: {
+    backgroundColor: "#f5f5f5",
+    borderBottomColor: "#e0e0e0",
   },
-  TextButton: {
-    color: "white",
-    fontWeight: "bold",
-    textAlign: "center",
+  itemContent: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  checkboxContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: theme.colorCerulean,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkboxCompleted: {
+    backgroundColor: theme.colorCerulean,
+    borderColor: theme.colorCerulean,
   },
   itemText: {
-    fontSize: 18,
-    fontWeight: 200,
+    fontSize: 16,
+    fontWeight: "400",
+    color: theme.colorBlack,
+    flex: 1,
+  },
+  completedText: {
+    textDecorationLine: "line-through",
+    color: theme.colorGray,
+  },
+  deleteButton: {
+    padding: 8,
+    borderRadius: 6,
+    marginLeft: 8,
   },
 });
